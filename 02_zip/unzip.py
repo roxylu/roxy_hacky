@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+import argparse
+import itertools
 import zipfile
-import optparse
 from threading import Thread
+from zipfile import BadZipfile
 
 
 def extract_file(z_file, password):
@@ -9,24 +12,26 @@ def extract_file(z_file, password):
     try:
         z_file.extractall(pwd=password)
         print '[+] Password = ' + password
+    except BadZipfile:
+        print '[-] Bad zip file with ' + password
+        pass
     except Exception, e:
         pass
 
 
 def main():
-    parser = optparse.OptionParser("usage%prog " + \
-        "-f <zipfile> -d <dictionary>")
-    parser.add_option('-f', dest='z_name', type='string',
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', dest='z_name',
                       help='specify zip file')
-    parser.add_option('-d', dest='d_name', type='string',
+    parser.add_argument('-d', dest='d_name',
                       help='specify dictionary file')
-    (options, args) = parser.parse_args()
-    if (options.z_name == None) | (options.d_name == None):
-        print parser.usage
+    args = parser.parse_args()
+    if (args.z_name == None) | (args.d_name == None):
+        parser.print_help()
         exit(0)
     else:
-        z_name = options.z_name
-        d_name = options.d_name
+        z_name = args.z_name
+        d_name = args.d_name
 
     z_file = zipfile.ZipFile(z_name)
     pass_file = open(d_name)

@@ -55,7 +55,7 @@ def main():
     args = parser.parse_args()
     target_host = args.target_host
     target_ports = str(args.target_port).split(', ')
-    if (target_host == None) | (target_ports[0] == None):
+    if (target_host is None) | (target_ports[0] is None):
         parser.print_help()
         exit(0)
     port_scan(target_host, target_ports)

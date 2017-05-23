@@ -2,6 +2,9 @@
 import argparse
 from socket import socket, AF_INET, SOCK_STREAM, gethostbyname, \
                    gethostbyaddr, setdefaulttimeout
+from threading import Thread, Semaphore
+
+screen_lock = Semaphore(value=1)
 
 
 def conn_scan(target_host, target_port):
@@ -10,11 +13,16 @@ def conn_scan(target_host, target_port):
         conn_socket.connect((target_host, target_port))
         conn_socket.send('HelloWorld\r\n')
         results = conn_socket.recv(100)
-        print '[+]%d/tcp open' % target_port
+
+        screen_lock.acquire()
+        print '[+] %d/tcp open' % target_port
         print '[+] ' + str(results)
-        conn_socket.close()
     except:
-        print '[-]%d/tcp closed' % target_port
+        screen_lock.acquire()
+        print '[-] %d/tcp closed' % target_port
+    finally:
+        screen_lock.release()
+        conn_socket.close()
 
 
 def port_scan(target_host, target_ports):
@@ -34,7 +42,8 @@ def port_scan(target_host, target_ports):
 
     for target_port in target_ports:
         print 'Scanning port ' + target_port
-        conn_scan(target_host, int(target_port))
+        t = Thread(target=conn_scan, args=(target_host, int(target_port)))
+        t.start()
 
 
 def main():
